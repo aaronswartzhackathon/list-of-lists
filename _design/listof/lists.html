@@ -1,0 +1,97 @@
+<html>
+  <head>
+<title>mailing list lists</title>
+<script src="freud.js"></script>
+<script src="collections-backport.js"></script>
+<style>
+body {
+  font-family: mono;
+}
+.label {
+  background-color: #aaa;
+  color: white;
+  font-size: 60%;
+}
+</style>
+</head>
+<body>
+<h1>list of lists</h1>
+<script>
+var ego = new SuperEgo();
+
+var lists = new Subcollection(ego, function(x) { return x.list !== undefined; });
+
+var cities = new Subcollection(lists, function(x) { return x.type === "city"; });
+
+var emails = new iui.CollectionMap(lists, function(obj) {
+    return obj.list;
+});
+// XXX: Once people are proper objects, this will change
+var EmailSearch = function(collection) {
+    iui.CollectionSearch.call(this, collection);
+}
+EmailSearch.prototype = new iui.CollectionSearch;
+EmailSearch.prototype.get_substrings = function(obj) {
+    // trivial
+    return [{str: obj, key: "e-mail", wd_idx: 0, obj: obj}];
+}
+var esearch = new EmailSearch(emails);
+
+function entry(label, onreturn, value) {
+    var $div = document.createElement("div");
+    var $lab = document.createElement("span");
+    $lab.className = "label";
+    $lab.innerHTML = label;
+    $div.appendChild($lab);
+    var $input = document.createElement("input");
+    $input.value = value || "";
+    $input.onkeydown = function(ev) {
+	if(ev.keyCode == 13) {	// Enter
+	    ev.preventDefault();
+	    onreturn(this.value);
+	}
+    }
+    $div.appendChild($input);
+    return $div;
+}
+
+var $newcity = entry("new city", function(val) {
+    var city = new SuperModel(ego, {"_id": val,
+				    "type": "city",
+				    "note": "",
+				    "list": [] });
+    city.save(function() { 
+	$newcity.value = "";
+    }, function() {
+	alert("error saving " + $newcity.value);
+    });
+});
+document.body.appendChild($newcity);
+
+var cityview = new SuperMarket(cities, function(obj, $el) {
+    $el.innerHTML = "<h3>" + obj._id + "</h3>";
+    $el.appendChild(entry("note", function(val) {
+	obj.note = val;
+	obj.save();
+    }, obj.note));
+
+    var $addrs = document.createElement("ul");
+    $el.appendChild($addrs);
+    obj.list.forEach(function(addr) {
+	var $a = document.createElement("li");
+	$a.innerHTML = addr;
+	$addrs.appendChild($a);
+    });
+    var $newaddr = entry("subscribe", function(val) {
+	obj.list.push(val);
+	obj.save();
+    });
+    $el.appendChild($newaddr);
+});
+document.body.appendChild(cityview.$el);
+
+ego.track();
+
+</script>
+</body>
+</html>

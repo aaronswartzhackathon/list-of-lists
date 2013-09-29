@@ -1,0 +1,22 @@
+[
+    {
+        "from": "db",
+        "to": "../../"
+    },
+    {
+        "from": "db/*",
+        "to": "../../*"
+    },
+    {
+        "from": "_session",
+        "to": "../../../_session"
+    },
+    {
+        "from": ":var",
+        "to": ":var"
+    },
+    {
+        "from": "",
+        "to": "lists.html"
+    }
+]

@@ -1,0 +1,15 @@
+list of lists (lol)
+
+snappy mailing-list admin interface
+
+uses enemies-of-carlotta as backend
+
+## development
+
+virtualenv .
+. bin/activate
+pip install couchdb requests
+[configure pyqt to be visible within virtual env:
+ - mac: sh misc/mac-qt-in-pip.sh
+]
+python lol.py
