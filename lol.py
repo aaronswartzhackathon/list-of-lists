@@ -15,12 +15,18 @@ execmd = [sys.executable, os.path.abspath(__file__)]
 class LOL(CouchTherapy):
     def doc_created(self, db, doc):
         if len(doc.get("list", [])) > 0:
-            log("created")
-            pass
+            log("created", doc["_id"])
+            subprocess.call(["enemies-of-carlotta", 
+                             "--name", "%s@%s" % (doc["_id"], HOSTNAME),
+                             "--owner", OWNER,
+                             "--create"])
     def doc_updated(self, db, doc):
         if len(doc.get("list", [])) > 0:
             log("updated")
-            pass
+            log("created", doc["_id"])
+            subprocess.call(["enemies-of-carlotta", 
+                             "--name", "%s@%s" % (doc["_id"], HOSTNAME),
+                             "--subscribe"] + doc["list"])
 
 if __name__=='__main__':
     if len(sys.argv) == 2 and sys.argv[1] == "sit-down":
