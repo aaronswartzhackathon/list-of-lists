@@ -133,7 +133,7 @@ var cityview = new SuperMarket(cities, function(obj, $el) {
 	obj.save();
     }, "", esearch);
     $el.appendChild($newaddr);
-});
+}, "div", function(x, y) { return x._id > y._id ? 1 : -1; });
 document.body.appendChild(cityview.$el);
 
 ego.track();
