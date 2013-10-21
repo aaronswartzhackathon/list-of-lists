@@ -84,6 +84,7 @@ function entry(label, onreturn, value, autocomplete) {
     if(autocomplete != undefined) {
 	$input.oninput = function(ev) {
 	    matches = autocomplete.matches(this.value);
+        matches = dedup(matches, function(x) { return x.str; })
 	    $completions.innerHTML = "";
 	    matches.forEach(function(matchobj) {
 		var $div = document.createElement("div");
@@ -138,6 +139,18 @@ document.body.appendChild(cityview.$el);
 
 ego.track();
 
+function dedup(list, keyfn) {
+    var dd = {};               // key -> obj
+    list.forEach(function(obj) {
+        dd[keyfn(obj)] = obj;
+    });
+    console.log("dd",dd);
+    var out = [];
+    for(var key in dd) {
+        out.push(dd[key]);
+    }
+    return out;
+}
 </script>
 </body>
 </html>
