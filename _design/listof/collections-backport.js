@@ -128,6 +128,9 @@ var iui = iui || {};
         });
     };
     iui.CollectionSearch.prototype = new CollectionWatcher;
+
+    var KEY_BLACKLIST = {"_rev": true};
+
     iui.CollectionSearch.prototype.get_substrings = function(obj) {
         // Returns a list of match dictionaries,
         // [{str:, key:, wd_idx:, obj: }]
@@ -139,7 +142,7 @@ var iui = iui || {};
             var val = obj[key];
             if(typeof val === "string") {
                 val.toLowerCase().split(" ").forEach(function(wd, idx) {
-                    wd = wd.replace( /[^a-z0-9]/ , "");
+                    wd = wd.replace( /[^a-z0-9@\.]/ , "");
                     out.push({str: wd, key: key, wd_idx: idx, obj: obj});
                 });
             }

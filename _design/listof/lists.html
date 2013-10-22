@@ -22,23 +22,10 @@ body {
 <script>
 var ego = new SuperEgo();
 
-var lists = new Subcollection(ego, function(x) { return x.list !== undefined; });
+var people = new Subcollection(ego, function(x) { return x.type === "person"; });
+// person: `name', `email', (also is `_id'), `parent', &c
 
-var cities = new Subcollection(lists, function(x) { return x.type === "city"; });
-
-var emails = new iui.CollectionMap(lists, function(obj) {
-    return obj.list;
-});
-// XXX: Once people are proper objects, this will change
-var EmailSearch = function(collection) {
-    iui.CollectionSearch.call(this, collection);
-}
-EmailSearch.prototype = new iui.CollectionSearch;
-EmailSearch.prototype.get_substrings = function(obj) {
-    // trivial
-    return [{str: obj, key: "e-mail", wd_idx: 0, obj: obj}];
-}
-var esearch = new EmailSearch(emails);
+var esearch = new iui.CollectionSearch(people);
 
 function entry(label, onreturn, value, autocomplete) {
     var $div = document.createElement("div");
@@ -102,40 +89,20 @@ function entry(label, onreturn, value, autocomplete) {
     return $div;
 }
 
-var $newcity = entry("new city", function(val) {
-    var city = new SuperModel(ego, {"_id": val,
-				    "type": "city",
-				    "note": "",
-				    "list": [] });
-    city.save(function() { 
-	$newcity.value = "";
-    }, function() {
-	alert("error saving " + $newcity.value);
-    });
-});
-document.body.appendChild($newcity);
+var $email = entry("email", function(address) {
+    if(address.indexOf("@") < 0 || address.indexOf(".") < 0) {
+        alert("invalid e-mail address");
+        return;
+    }
+    var person = new SuperModel(ego, {_id: address,
+                                      type: "person",
+                                      // XXX: parent: me
+                                      email: address});
+    person.save();
+    // XXX: add more fields
+}, "", esearch);
 
-var cityview = new SuperMarket(cities, function(obj, $el) {
-    $el.innerHTML = "<h3>" + obj._id + "</h3>";
-    $el.appendChild(entry("note", function(val) {
-	obj.note = val;
-	obj.save();
-    }, obj.note));
-
-    var $addrs = document.createElement("ul");
-    $el.appendChild($addrs);
-    obj.list.forEach(function(addr) {
-	var $a = document.createElement("li");
-	$a.innerHTML = addr;
-	$addrs.appendChild($a);
-    });
-    var $newaddr = entry("subscribe", function(val) {
-	obj.list.push(val);
-	obj.save();
-    }, "", esearch);
-    $el.appendChild($newaddr);
-}, "div", function(x, y) { return x._id > y._id ? 1 : -1; });
-document.body.appendChild(cityview.$el);
+document.body.appendChild($email);
 
 ego.track();
 
@@ -144,7 +111,6 @@ function dedup(list, keyfn) {
     list.forEach(function(obj) {
         dd[keyfn(obj)] = obj;
     });
-    console.log("dd",dd);
     var out = [];
     for(var key in dd) {
         out.push(dd[key]);
